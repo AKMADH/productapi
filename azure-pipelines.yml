@@ -1,29 +1,14 @@
-# Docker
-# Build a Docker image
-# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+- task: DotNetCoreCLI@2
+  displayName: Publish Application
+  inputs:
+    command: publish
+    projects: '**/SecureProductApi.csproj'
+    arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
+    zipAfterPublish: true
 
-trigger:
-- main
-
-resources:
-- repo: self
-
-variables:
-  tag: '$(Build.BuildId)'
-
-stages:
-- stage: Build
-  displayName: Build image
-  jobs:
-  - job: Build
-    displayName: Build
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-    - task: Docker@2
-      displayName: Build an image
-      inputs:
-        command: build
-        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
-        tags: |
-          $(tag)
+- task: PublishPipelineArtifact@1
+  displayName: Publish Artifact
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)'
+    artifact: drop
+    publishLocation: pipeline
