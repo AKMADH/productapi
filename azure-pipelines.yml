@@ -1,45 +1,9 @@
-trigger:
-- main
-
-pool:
-  vmImage: 'ubuntu-latest'
-
-steps:
-
-- task: UseDotNet@2
-  displayName: Install .NET SDK
-  inputs:
-    packageType: 'sdk'
-    version: '10.x'
-
-- script: dotnet restore
-  displayName: Restore
-
-- script: dotnet build --configuration Release --no-restore
-  displayName: Build
-
-- script: dotnet test --configuration Release --no-build
-  displayName: Test
-
-- task: DotNetCoreCLI@2
-  displayName: Publish Application
-  inputs:
-    command: publish
-    projects: '**/SecureProductApi.csproj'
-    arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
-    zipAfterPublish: true
-
-- task: PublishPipelineArtifact@1
-  displayName: Publish Artifact
-  inputs:
-    targetPath: '$(Build.ArtifactStagingDirectory)'
-    artifact: 'drop'
-    publishLocation: 'pipeline'
-
 - task: Docker@2
-  displayName: Build Docker Image
+  displayName: Build and Push Docker Image
   inputs:
-    command: build
-    Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+    command: buildAndPush
+    containerRegistry: 'SecureProductApi-ACR'
+    repository: 'secure-product-api'
+    dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
     tags: |
-      secure-product-api:$(Build.BuildId)
+      $(Build.BuildId)
